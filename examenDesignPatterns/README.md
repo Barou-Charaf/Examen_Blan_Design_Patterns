@@ -109,3 +109,25 @@ contrôle protège l'API annotée du réseau, pas les objets déjà détenus par
 Java de confiance. Les restrictions State restent applicables aux utilisateurs autorisés.
 
 Référence : [chargement des aspects AspectJ](https://eclipse.dev/aspectj/doc/latest/devguide/ltw.html).
+
+## Amélioration : Builder
+
+`NeuralNetworkBuilder` construit un réseau avec des appels chaînés :
+
+```java
+NeuralNetwork network = new NeuralNetworkBuilder()
+        .addInputLayer(3)
+        .addHiddenLayer(5, new Sigmoid(), 0.5)
+        .addOutputLayer(2, new Sigmoid(), 0.5)
+        .build();
+```
+
+Chaque couche accepte un poids uniforme ou une matrice `weights[destination][source]`.
+Une entrée et une sortie sont obligatoires, les couches cachées sont facultatives.
+Une sortie reste la dernière couche. Les connexions sont créées par le réseau,
+avec les validations existantes. Un ajout invalide peut être corrigé sans perdre
+la construction en cours. Après un `build()` réussi, ce Builder n'est plus réutilisable.
+
+Les opérations exigent `ADMIN` via l'aspect de sécurité. Le réseau construit reste
+en `Construction` ; `build()` n'effectue aucun entraînement. `Main` utilise cette
+construction, puis ajoute les fonctionnalités des étapes précédentes.

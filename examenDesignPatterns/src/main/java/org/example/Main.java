@@ -6,9 +6,8 @@ import org.example.security.SecurityContext;
 import org.example.decorator.TimingDecorator;
 import org.example.adapter.ActivationAdapter;
 import org.example.legacy.LegacySigmoid;
-import org.example.model.HiddenLayer;
-import org.example.model.InputLayer;
 import org.example.model.NeuralNetwork;
+import org.example.builder.NeuralNetworkBuilder;
 import org.example.model.OutputLayer;
 import org.example.strategy.Sigmoid;
 
@@ -18,20 +17,13 @@ public class Main {
     public static void main(String[] args) {
         SecurityContext.setRole(Role.ADMIN);
         try {
-            NeuralNetwork network = new NeuralNetwork(new InputLayer(3));
-            network.addLayer(new HiddenLayer(5, new Sigmoid()), new double[][]{
-                    {0.5, 0.5, 0.5},
-                    {0.5, 0.5, 0.5},
-                    {0.5, 0.5, 0.5},
-                    {0.5, 0.5, 0.5},
-                    {0.5, 0.5, 0.5}
-            });
-            OutputLayer outputLayer = new OutputLayer(2, new Sigmoid());
+            NeuralNetwork network = new NeuralNetworkBuilder()
+                    .addInputLayer(3)
+                    .addHiddenLayer(5, new Sigmoid(), 0.5)
+                    .addOutputLayer(2, new Sigmoid(), 0.5)
+                    .build();
+            OutputLayer outputLayer = (OutputLayer) network.getLayers().get(2);
             outputLayer.getNeurons().get(1).setActivation(new ActivationAdapter(new LegacySigmoid()));
-            network.addLayer(outputLayer, new double[][]{
-                    {0.5, 0.5, 0.5, 0.5, 0.5},
-                    {0.5, 0.5, 0.5, 0.5, 0.5}
-            });
 
             network.addObserver(new Dashboard());
             network.fit(() -> System.out.println("Démonstration du cycle de vie, sans apprentissage numérique"));
