@@ -1,6 +1,7 @@
 package org.example.model;
 
 import org.example.state.*;
+import org.example.decorator.LayerDecorator;
 import org.example.observer.NetworkObserver;
 
 import java.util.ArrayList;
@@ -13,8 +14,12 @@ public class NeuralNetwork {
     private final InputLayer inputLayer;
     private final List<Layer> layers = new ArrayList<>();
 
-    public NeuralNetwork(InputLayer inputLayer) {
-        this.inputLayer = Objects.requireNonNull(inputLayer, "La couche d'entrée est obligatoire");
+    public NeuralNetwork(Layer inputLayer) {
+        Objects.requireNonNull(inputLayer, "La couche d'entrée est obligatoire");
+        if (!(inputLayer.getBaseLayer() instanceof InputLayer input)) {
+            throw new IllegalArgumentException("La première couche doit être une entrée");
+        }
+        this.inputLayer = input;
         layers.add(inputLayer);
     }
 
@@ -24,7 +29,7 @@ public class NeuralNetwork {
         Objects.requireNonNull(layer, "La couche est obligatoire");
         Objects.requireNonNull(weights, "Les poids sont obligatoires");
         Layer previous = layers.get(layers.size() - 1);
-        if (layer instanceof InputLayer || previous instanceof OutputLayer || layers.contains(layer)) {
+        if (layer.getBaseLayer() instanceof InputLayer || previous.getBaseLayer() instanceof OutputLayer || layers.contains(layer)) {
             throw new IllegalArgumentException("Ordre attendu : entrée, couches cachées, sortie");
         }
         if (layer.getNeurons().stream().anyMatch(n -> !n.getIncomingConnections().isEmpty())) {
@@ -52,15 +57,25 @@ public class NeuralNetwork {
 
     public double[] predict(double[] input) {
         state.checkPrediction();
-        if (!(layers.get(layers.size() - 1) instanceof OutputLayer)) {
+        if (!(layers.get(layers.size() - 1).getBaseLayer() instanceof OutputLayer)) {
             throw new IllegalStateException("Le réseau doit posséder une couche de sortie");
         }
         inputLayer.setInputs(input);
-        double[] output = inputLayer.forward();
+        double[] output = layers.get(0).forward();
         for (int i = 1; i < layers.size(); i++) {
             output = layers.get(i).forward();
         }
         return output;
+    }
+
+    public void decorateLayer(LayerDecorator decorator) {
+        state.checkTraining();
+        Objects.requireNonNull(decorator, "Le décorateur est obligatoire");
+        int index = layers.indexOf(decorator.getWrappedLayer());
+        if (index < 0) {
+            throw new IllegalArgumentException("La couche enveloppée doit appartenir au réseau");
+        }
+        layers.set(index, decorator);
     }
 
     public String getStateName() {
@@ -91,7 +106,7 @@ public class NeuralNetwork {
     public void train(Runnable trainingOperation) {
         Objects.requireNonNull(trainingOperation, "L'opération d'entraînement est obligatoire");
         state.checkTraining();
-        if (!(layers.get(layers.size() - 1) instanceof OutputLayer)) {
+        if (!(layers.get(layers.size() - 1).getBaseLayer() instanceof OutputLayer)) {
             throw new IllegalStateException("Le réseau doit posséder une couche de sortie");
         }
         setState(new TrainingState());

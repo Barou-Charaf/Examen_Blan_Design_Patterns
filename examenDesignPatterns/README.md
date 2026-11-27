@@ -70,3 +70,15 @@ L'opération fournie à `Main` affiche explicitement qu'il s'agit d'une démonst
 et conserve leur historique. `addObserver` évite les doublons et `removeObserver`
 désabonne un composant. Une erreur d'un observateur est signalée sans interrompre
 l'entraînement ni les autres notifications.
+
+## Decorator
+
+`LayerDecorator` enveloppe une couche et partage ses neurones sans les recréer.
+`TimingDecorator` mesure chaque appel à `forward()` en nanosecondes, avec accès
+à la dernière durée par `getLastDurationNanos()`. Il conserve le résultat et les
+exceptions du calcul. La mesure n'est pas un benchmark et varie entre exécutions.
+
+Les décorateurs peuvent être imbriqués et utilisés sur les trois types de couches.
+`network.decorateLayer(new TimingDecorator(layer))` remplace une couche existante
+par son décorateur, sans reconnecter le réseau. L'opération est refusée pendant
+Training. `Main` montre la décoration de la sortie après préparation du réseau.

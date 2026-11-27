@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.observer.Dashboard;
+import org.example.decorator.TimingDecorator;
 import org.example.adapter.ActivationAdapter;
 import org.example.legacy.LegacySigmoid;
 import org.example.model.HiddenLayer;
@@ -31,9 +32,13 @@ public class Main {
         network.addObserver(new Dashboard());
         network.fit(() -> System.out.println("Démonstration du cycle de vie, sans apprentissage numérique"));
 
+        TimingDecorator timedOutput = new TimingDecorator(outputLayer);
+        network.decorateLayer(timedOutput);
+
         double[] input = {0.2, 0.4, 0.6};
         System.out.println("Entrée : " + Arrays.toString(input));
         System.out.println("Sortie (Sigmoid, ancienne Sigmoid adaptée) : "
                 + Arrays.toString(network.predict(input)));
+        System.out.println("Durée de la couche de sortie : " + timedOutput.getLastDurationNanos() + " ns");
     }
 }

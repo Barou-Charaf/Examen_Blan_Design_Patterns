@@ -21,6 +21,14 @@ public abstract class Layer {
         neurons = List.copyOf(createdNeurons);
     }
 
+    protected Layer(Layer wrapped) {
+        neurons = Objects.requireNonNull(wrapped, "La couche est obligatoire").getNeurons();
+    }
+
+    public Layer getBaseLayer() {
+        return this;
+    }
+
     public double[] forward() {
         double[] outputs = new double[size()];
         for (int i = 0; i < size(); i++) {
