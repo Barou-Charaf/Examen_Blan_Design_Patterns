@@ -10,10 +10,12 @@ public abstract class LayerDecorator extends Layer {
         this.wrapped = wrapped;
     }
 
-    public Layer getWrappedLayer() { return wrapped; }
+    public Layer getWrappedLayer() {
+        return wrapped; }
 
     @Override
-    public Layer getBaseLayer() { return wrapped.getBaseLayer(); }
+    public Layer getBaseLayer() {
+        return wrapped.getBaseLayer(); }
 
     @Override
     public double[] forward() { return wrapped.forward(); }
