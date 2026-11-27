@@ -1,0 +1,18 @@
+.idea/
+*.iml
+**/target/
+*.class
+
+# Documentation locale, exclue de GitHub
+/rapport/
+*.tex
+*.puml
+*.plantuml
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
+# Instructions locales de travail
+/AGENTS.md
