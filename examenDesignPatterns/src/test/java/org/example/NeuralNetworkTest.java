@@ -13,6 +13,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NeuralNetworkTest {
+    private static double[] predictAfterTraining(NeuralNetwork network, double[] input) {
+        if (network.getStateName().equals("Construction")) {
+            network.train(() -> {}); // Paramètres fixés par le test, aucun apprentissage.
+        }
+        return network.predict(input);
+    }
+
     private static final double EPSILON = 1e-12;
 
     @Test
@@ -64,9 +71,9 @@ class NeuralNetworkTest {
         network.addLayer(output, new double[][]{{0.7, 0.3}});
 
         // Entrée [2, 3] -> couche cachée [1.7, 1.2] -> sigmoid(1.6).
-        assertArrayEquals(new double[]{0.8320183851339245}, network.predict(new double[]{2, 3}), EPSILON);
+        assertArrayEquals(new double[]{0.8320183851339245}, predictAfterTraining(network, new double[]{2, 3}), EPSILON);
         // Entrée [0, 0] -> couche cachée [0.1, -0.2] -> sigmoid(0.06).
-        assertArrayEquals(new double[]{0.51499550161941}, network.predict(new double[]{0, 0}), EPSILON);
+        assertArrayEquals(new double[]{0.51499550161941}, predictAfterTraining(network, new double[]{0, 0}), EPSILON);
     }
 
     @Test
@@ -83,7 +90,7 @@ class NeuralNetworkTest {
                 .mapToInt(neuron -> neuron.getIncomingConnections().size()).sum();
 
         assertEquals(25, connections);
-        assertArrayEquals(new double[]{1.75, 4.25}, network.predict(new double[]{1, 2, 3}), EPSILON);
+        assertArrayEquals(new double[]{1.75, 4.25}, predictAfterTraining(network, new double[]{1, 2, 3}), EPSILON);
     }
 
     @Test
@@ -92,7 +99,7 @@ class NeuralNetworkTest {
         network.addLayer(new HiddenLayer(1, new Identity()), new double[][]{{0.5}});
         network.addLayer(new HiddenLayer(1, new Identity()), new double[][]{{0.4}});
         network.addLayer(new OutputLayer(1, new Identity()), new double[][]{{0.3}});
-        assertArrayEquals(new double[]{0.12}, network.predict(new double[]{2}), EPSILON);
+        assertArrayEquals(new double[]{0.12}, predictAfterTraining(network, new double[]{2}), EPSILON);
     }
 
     @Test
@@ -106,19 +113,19 @@ class NeuralNetworkTest {
         assertThrows(IllegalArgumentException.class,
                 () -> network.addLayer(output, new double[][]{{0.5}, {0.5}}));
         network.addLayer(output, new double[][]{{1, 0}, {0, 1}});
-        assertArrayEquals(new double[]{2, 3}, network.predict(new double[]{2, 3}), EPSILON);
+        assertArrayEquals(new double[]{2, 3}, predictAfterTraining(network, new double[]{2, 3}), EPSILON);
     }
 
     @Test
     void rejectsInvalidTopologyAndInput() {
         NeuralNetwork network = new NeuralNetwork(new InputLayer(1));
-        assertThrows(IllegalStateException.class, () -> network.predict(new double[]{1}));
+        assertThrows(IllegalStateException.class, () -> predictAfterTraining(network, new double[]{1}));
         assertThrows(IllegalArgumentException.class,
                 () -> network.addLayer(new InputLayer(1), new double[][]{{1}}));
         network.addLayer(new OutputLayer(1, new Identity()), new double[][]{{1}});
-        assertThrows(IllegalArgumentException.class, () -> network.predict(new double[]{1, 2}));
-        assertThrows(IllegalArgumentException.class, () -> network.predict(new double[]{Double.NaN}));
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class, () -> predictAfterTraining(network, new double[]{1, 2}));
+        assertThrows(IllegalArgumentException.class, () -> predictAfterTraining(network, new double[]{Double.NaN}));
+        assertThrows(IllegalStateException.class,
                 () -> network.addLayer(new HiddenLayer(1, new Identity()), new double[][]{{1}}));
         assertThrows(IllegalArgumentException.class, () -> new InputLayer(0));
     }

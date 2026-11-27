@@ -53,6 +53,20 @@ L'ancienne API ne dépend pas de la nouvelle ; les neurones restent inchangés.
 neuron.setActivation(new ActivationAdapter(new LegacySigmoid()));
 ```
 
-L'entraînement et les patterns suivants ne sont pas encore implémentés.
-`predict` est utilisable à cette étape pour vérifier les calculs ; la restriction
-aux réseaux entraînés sera ajoutée avec le pattern State.
+## State et Observer
+
+Le réseau commence en `Construction`. `train(Runnable)` exécute l'opération
+fournie en état `Training`, puis passe à `Trained` si elle réussit. `fit` est
+un alias de `train`. Une exception remet le réseau en `Construction` et est
+propagée : les paramètres éventuellement modifiés ne sont pas restaurés.
+`predict` est réservé à `Trained`; `addLayer` est réservé à `Construction`.
+Le réentraînement est possible. Ces opérations sont synchrones, pour un usage
+sur un seul thread. Les setters de paramètres restent disponibles pour l'apprentissage.
+
+Aucun algorithme d'apprentissage numérique n'est ajouté à cette étape.
+L'opération fournie à `Main` affiche explicitement qu'il s'agit d'une démonstration.
+
+`NetworkObserver` reçoit le nom du nouvel état. `Dashboard` affiche les transitions
+et conserve leur historique. `addObserver` évite les doublons et `removeObserver`
+désabonne un composant. Une erreur d'un observateur est signalée sans interrompre
+l'entraînement ni les autres notifications.

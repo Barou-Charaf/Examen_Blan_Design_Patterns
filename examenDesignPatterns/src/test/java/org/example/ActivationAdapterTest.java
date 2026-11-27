@@ -13,6 +13,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ActivationAdapterTest {
+    private static double[] predictAfterTraining(NeuralNetwork network, double[] input) {
+        if (network.getStateName().equals("Construction")) {
+            network.train(() -> {}); // Paramètres fixés par le test, aucun apprentissage.
+        }
+        return network.predict(input);
+    }
+
     private static final double EPSILON = 1e-12;
 
     @Test
@@ -48,11 +55,11 @@ class ActivationAdapterTest {
         network.addLayer(output, new double[][]{{0.5, 0.2}, {0.5, 0.2}});
 
         assertArrayEquals(new double[]{0.8455347349164652, 0.8455347349164652},
-                network.predict(new double[]{2, 3}), EPSILON);
+                predictAfterTraining(network, new double[]{2, 3}), EPSILON);
 
         output.getNeurons().get(1).setActivation(new Identity());
         assertArrayEquals(new double[]{0.8455347349164652, 1.7},
-                network.predict(new double[]{2, 3}), EPSILON);
+                predictAfterTraining(network, new double[]{2, 3}), EPSILON);
     }
 
     @Test

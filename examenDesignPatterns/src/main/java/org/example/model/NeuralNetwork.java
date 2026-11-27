@@ -1,10 +1,15 @@
 package org.example.model;
 
+import org.example.state.*;
+import org.example.observer.NetworkObserver;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class NeuralNetwork {
+    private NetworkState state = new ConstructionState();
+    private final List<NetworkObserver> observers = new ArrayList<>();
     private final InputLayer inputLayer;
     private final List<Layer> layers = new ArrayList<>();
 
@@ -15,6 +20,7 @@ public class NeuralNetwork {
 
     // weights[destination][source] relie deux couches consécutives.
     public void addLayer(Layer layer, double[][] weights) {
+        state.checkConstruction();
         Objects.requireNonNull(layer, "La couche est obligatoire");
         Objects.requireNonNull(weights, "Les poids sont obligatoires");
         Layer previous = layers.get(layers.size() - 1);
@@ -45,6 +51,7 @@ public class NeuralNetwork {
     }
 
     public double[] predict(double[] input) {
+        state.checkPrediction();
         if (!(layers.get(layers.size() - 1) instanceof OutputLayer)) {
             throw new IllegalStateException("Le réseau doit posséder une couche de sortie");
         }
@@ -54,6 +61,51 @@ public class NeuralNetwork {
             output = layers.get(i).forward();
         }
         return output;
+    }
+
+    public String getStateName() {
+        return state.getName();
+    }
+
+    public void addObserver(NetworkObserver observer) {
+        Objects.requireNonNull(observer, "L'observateur est obligatoire");
+        if (!observers.contains(observer)) observers.add(observer);
+    }
+
+    public void removeObserver(NetworkObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void setState(NetworkState nextState) {
+        state = nextState;
+        for (NetworkObserver observer : List.copyOf(observers)) {
+            try {
+                observer.update(state.getName());
+            } catch (RuntimeException exception) {
+                System.err.println("Notification impossible : " + exception.getMessage());
+            }
+        }
+    }
+
+    // L'algorithme d'apprentissage est fourni par l'appelant, pas simulé ici.
+    public void train(Runnable trainingOperation) {
+        Objects.requireNonNull(trainingOperation, "L'opération d'entraînement est obligatoire");
+        state.checkTraining();
+        if (!(layers.get(layers.size() - 1) instanceof OutputLayer)) {
+            throw new IllegalStateException("Le réseau doit posséder une couche de sortie");
+        }
+        setState(new TrainingState());
+        boolean completed = false;
+        try {
+            trainingOperation.run();
+            completed = true;
+        } finally {
+            setState(completed ? new TrainedState() : new ConstructionState());
+        }
+    }
+
+    public void fit(Runnable trainingOperation) {
+        train(trainingOperation);
     }
 
     public List<Layer> getLayers() {

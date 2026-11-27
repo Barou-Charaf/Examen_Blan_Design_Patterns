@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.observer.Dashboard;
 import org.example.adapter.ActivationAdapter;
 import org.example.legacy.LegacySigmoid;
 import org.example.model.HiddenLayer;
@@ -26,6 +27,9 @@ public class Main {
                 {0.5, 0.5, 0.5, 0.5, 0.5},
                 {0.5, 0.5, 0.5, 0.5, 0.5}
         });
+
+        network.addObserver(new Dashboard());
+        network.fit(() -> System.out.println("Démonstration du cycle de vie, sans apprentissage numérique"));
 
         double[] input = {0.2, 0.4, 0.6};
         System.out.println("Entrée : " + Arrays.toString(input));
