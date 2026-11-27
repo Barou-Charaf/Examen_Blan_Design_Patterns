@@ -14,6 +14,7 @@ public class ActivationAdapter implements ActivationFunction {
 
     @Override
     public double activate(double value) {
+
         return legacy.calculate(value);
     }
 }
