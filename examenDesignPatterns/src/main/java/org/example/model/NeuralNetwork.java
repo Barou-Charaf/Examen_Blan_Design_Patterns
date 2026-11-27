@@ -1,6 +1,8 @@
 package org.example.model;
 
 import org.example.state.*;
+import org.example.security.RequiresRole;
+import org.example.security.Role;
 import org.example.decorator.LayerDecorator;
 import org.example.observer.NetworkObserver;
 
@@ -24,6 +26,7 @@ public class NeuralNetwork {
     }
 
     // weights[destination][source] relie deux couches consécutives.
+    @RequiresRole(Role.ADMIN)
     public void addLayer(Layer layer, double[][] weights) {
         state.checkConstruction();
         Objects.requireNonNull(layer, "La couche est obligatoire");
@@ -55,6 +58,7 @@ public class NeuralNetwork {
         layers.add(layer);
     }
 
+    @RequiresRole(Role.USER)
     public double[] predict(double[] input) {
         state.checkPrediction();
         if (!(layers.get(layers.size() - 1).getBaseLayer() instanceof OutputLayer)) {
@@ -68,6 +72,7 @@ public class NeuralNetwork {
         return output;
     }
 
+    @RequiresRole(Role.ADMIN)
     public void decorateLayer(LayerDecorator decorator) {
         state.checkTraining();
         Objects.requireNonNull(decorator, "Le décorateur est obligatoire");
@@ -78,15 +83,18 @@ public class NeuralNetwork {
         layers.set(index, decorator);
     }
 
+    @RequiresRole(Role.USER)
     public String getStateName() {
         return state.getName();
     }
 
+    @RequiresRole(Role.ADMIN)
     public void addObserver(NetworkObserver observer) {
         Objects.requireNonNull(observer, "L'observateur est obligatoire");
         if (!observers.contains(observer)) observers.add(observer);
     }
 
+    @RequiresRole(Role.ADMIN)
     public void removeObserver(NetworkObserver observer) {
         observers.remove(observer);
     }
@@ -103,6 +111,7 @@ public class NeuralNetwork {
     }
 
     // L'algorithme d'apprentissage est fourni par l'appelant, pas simulé ici.
+    @RequiresRole(Role.ADMIN)
     public void train(Runnable trainingOperation) {
         Objects.requireNonNull(trainingOperation, "L'opération d'entraînement est obligatoire");
         state.checkTraining();
@@ -119,10 +128,12 @@ public class NeuralNetwork {
         }
     }
 
+    @RequiresRole(Role.ADMIN)
     public void fit(Runnable trainingOperation) {
         train(trainingOperation);
     }
 
+    @RequiresRole(Role.ADMIN)
     public List<Layer> getLayers() {
         return List.copyOf(layers);
     }

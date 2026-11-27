@@ -13,6 +13,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ActivationAdapterTest {
+    @org.junit.jupiter.api.BeforeEach
+    void authorize() { org.example.security.SecurityContext.setRole(org.example.security.Role.ADMIN); }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearAuthorization() { org.example.security.SecurityContext.clear(); }
+
     private static double[] predictAfterTraining(NeuralNetwork network, double[] input) {
         if (network.getStateName().equals("Construction")) {
             network.train(() -> {}); // Paramètres fixés par le test, aucun apprentissage.

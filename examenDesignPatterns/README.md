@@ -13,7 +13,7 @@ Depuis ce dossier :
 
 ```bash
 mvn test
-java -cp target/classes org.example.Main
+./run.sh
 ```
 
 `Main` construit le réseau 3–5–2 de l'énoncé. Les poids sont fixés à 0,5 et
@@ -82,3 +82,30 @@ Les décorateurs peuvent être imbriqués et utilisés sur les trois types de co
 `network.decorateLayer(new TimingDecorator(layer))` remplace une couche existante
 par son décorateur, sans reconnecter le réseau. L'opération est refusée pendant
 Training. `Main` montre la décoration de la sortie après préparation du réseau.
+
+## Aspects AOP
+
+AspectJ 1.9.25.1 applique les aspects au chargement des classes Java 17.
+`META-INF/aop.xml` déclare les deux aspects. Maven active l'agent pour les tests ;
+`./run.sh` compile et lance la démonstration avec cet agent. Si le dépôt Maven est
+personnalisé, fournir le chemin du JAR via `ASPECTJ_JAR`.
+Ne pas lancer Main avec une simple commande `java -cp` : sans l'agent,
+les aspects et les contrôles d'accès ne sont pas appliqués.
+
+- `LoggingAspect` journalise les entrées, succès, erreurs et durées des méthodes
+  applicatives, y compris les méthodes privées et les appels internes. Il exclut
+  l'infrastructure AOP, le contexte de sécurité et les tests. Les arguments,
+  résultats et messages d'erreur potentiellement sensibles ne sont pas enregistrés.
+- `SecurityAspect` vérifie `@RequiresRole` avant l'exécution de la méthode.
+  Sans rôle, l'accès annoté est refusé. `USER` peut prédire et lire l'état ;
+  `ADMIN` peut aussi configurer, entraîner, gérer les observateurs et accéder
+  aux couches modifiables. La journalisation englobe les contrôles de sécurité
+  afin d'enregistrer aussi les refus.
+
+`SecurityContext` représente une identité déjà authentifiée dans une application
+réelle. Ici les rôles sont affectés explicitement pour la démonstration puis
+supprimés dans un `finally`. Ce n'est pas un système d'authentification : le
+contrôle protège l'API annotée du réseau, pas les objets déjà détenus par du code
+Java de confiance. Les restrictions State restent applicables aux utilisateurs autorisés.
+
+Référence : [chargement des aspects AspectJ](https://eclipse.dev/aspectj/doc/latest/devguide/ltw.html).

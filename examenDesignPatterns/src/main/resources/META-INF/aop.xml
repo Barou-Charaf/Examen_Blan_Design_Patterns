@@ -1,0 +1,10 @@
+<aspectj>
+    <aspects>
+        <aspect name="org.example.aop.LoggingAspect"/>
+        <aspect name="org.example.aop.SecurityAspect"/>
+    </aspects>
+    <weaver>
+        <include within="org.example..*"/>
+        <exclude within="org.example.*Test*"/>
+    </weaver>
+</aspectj>

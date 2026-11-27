@@ -8,6 +8,12 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StateObserverTest {
+    @org.junit.jupiter.api.BeforeEach
+    void authorize() { org.example.security.SecurityContext.setRole(org.example.security.Role.ADMIN); }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearAuthorization() { org.example.security.SecurityContext.clear(); }
+
     private NeuralNetwork network() {
         NeuralNetwork network = new NeuralNetwork(new InputLayer(1));
         network.addLayer(new OutputLayer(1, new Identity()), new double[][]{{1}});

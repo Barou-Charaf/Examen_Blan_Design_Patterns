@@ -7,6 +7,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DecoratorTest {
+    @org.junit.jupiter.api.BeforeEach
+    void authorize() { org.example.security.SecurityContext.setRole(org.example.security.Role.ADMIN); }
+
+    @org.junit.jupiter.api.AfterEach
+    void clearAuthorization() { org.example.security.SecurityContext.clear(); }
+
     @Test void decoratesAllLayerTypesAndPreservesConnections() {
         InputLayer input = new InputLayer(1);
         TimingDecorator timedInput = new TimingDecorator(input);
