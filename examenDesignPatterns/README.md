@@ -2,9 +2,10 @@
 
 Projet Maven en Java 17.
 
-Cette première étape contient le modèle (`Neuron`, `Connection`, `Layer` et ses
+Le projet contient le modèle (`Neuron`, `Connection`, `Layer` et ses
 trois types), le pattern Strategy (`ActivationFunction`, `Sigmoid`, `Identity`)
-et la propagation avant dans `NeuralNetwork`.
+et la propagation avant dans `NeuralNetwork`. Le pattern Adapter permet également
+d'utiliser une ancienne fonction d'activation.
 
 ## Exécuter
 
@@ -18,6 +19,7 @@ java -cp target/classes org.example.Main
 `Main` construit le réseau 3–5–2 de l'énoncé. Les poids sont fixés à 0,5 et
 les biais à zéro pour obtenir un exemple reproductible. Les deux sorties sont
 identiques car leurs paramètres sont identiques.
+La première utilise `Sigmoid`, la seconde `LegacySigmoid` via `ActivationAdapter`.
 
 ## Utilisation
 
@@ -37,6 +39,20 @@ La couche d'entrée transmet directement les valeurs reçues. Les couches utilis
 La fonction d'activation d'un neurone peut être remplacée avec `setActivation(...)`.
 Les biais et poids sont modifiables avec `setBias(...)` et `setWeight(...)`.
 
-L'entraînement et les autres patterns ne sont pas encore implémentés.
+## Adapter
+
+Le package `legacy` représente une ancienne API : `LegacyActivation` expose
+`calculate(double)` et `LegacySigmoid` l'implémente. Cet exemple est fourni pour
+l'exercice, aucune bibliothèque ancienne n'étant fournie dans le projet initial.
+
+`ActivationAdapter` implémente l'interface attendue par les neurones,
+`ActivationFunction`, et délègue `activate(value)` à `legacy.calculate(value)`.
+L'ancienne API ne dépend pas de la nouvelle ; les neurones restent inchangés.
+
+```java
+neuron.setActivation(new ActivationAdapter(new LegacySigmoid()));
+```
+
+L'entraînement et les patterns suivants ne sont pas encore implémentés.
 `predict` est utilisable à cette étape pour vérifier les calculs ; la restriction
 aux réseaux entraînés sera ajoutée avec le pattern State.

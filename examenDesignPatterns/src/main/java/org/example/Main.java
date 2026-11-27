@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.adapter.ActivationAdapter;
+import org.example.legacy.LegacySigmoid;
 import org.example.model.HiddenLayer;
 import org.example.model.InputLayer;
 import org.example.model.NeuralNetwork;
@@ -18,13 +20,16 @@ public class Main {
                 {0.5, 0.5, 0.5},
                 {0.5, 0.5, 0.5}
         });
-        network.addLayer(new OutputLayer(2, new Sigmoid()), new double[][]{
+        OutputLayer outputLayer = new OutputLayer(2, new Sigmoid());
+        outputLayer.getNeurons().get(1).setActivation(new ActivationAdapter(new LegacySigmoid()));
+        network.addLayer(outputLayer, new double[][]{
                 {0.5, 0.5, 0.5, 0.5, 0.5},
                 {0.5, 0.5, 0.5, 0.5, 0.5}
         });
 
         double[] input = {0.2, 0.4, 0.6};
         System.out.println("Entrée : " + Arrays.toString(input));
-        System.out.println("Sortie : " + Arrays.toString(network.predict(input)));
+        System.out.println("Sortie (Sigmoid, ancienne Sigmoid adaptée) : "
+                + Arrays.toString(network.predict(input)));
     }
 }
